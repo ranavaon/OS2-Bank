@@ -1,7 +1,7 @@
 #ifndef _ACCOUNT_H
 #define _ACCOUNT_H
 
-#include <string>
+#include <string.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -11,12 +11,14 @@
 #include <time.h>
 #include <pthread.h>
 
+using namespace std;
+
 class Account{
 public:
-	void Account();
-	string withdraw();
-	string deposit();
-	string getBalance();
+Account(string accNum,string pass,int initMoney);
+	string withdraw(string accNum,string pass,int money);
+	string deposit(string accNum,string pass,int money);
+	int getBalance(){return balance;}
 	/*Mutex needed */
 
 private:
