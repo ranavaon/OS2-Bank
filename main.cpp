@@ -21,18 +21,18 @@ int main(int argc, char* argv[])
 	Bank* p_bank=&ourBank;
 	//ATM* ATM_arr = new ATM[N]; // allocate array of N ATMs
 
-	/* till here i got-RAN NAVON */
 
-	for (int i = 0; i < N; i++)
+	for (int i = 1; i <= N; i++)
 	{
-		ATM
-		ATM_arr[i].initATM(&HeziBank); // initialize them
+		ATM newATM = ATM(i,p_bank);
+		ourBank.ATMs.push_back(newATM); // initialize them
 	}
+	/* till here i got-RAN NAVON */
 	pthread_t *ATMs_th = new pthread_t[N]; // array of N threads for the ATMs
 	for (int i = 0; i < N; i++)
 	{
-		ATM_arr[i].setCmds(argv[i + 2]); // pass text file to each ATM
-		if (pthread_create(&ATMs_th[i], NULL, ATM::ExeCmd, (void*)&ATM_arr[i])) // create threads
+		ourBank.ATMs[i].setCmds(argv[i + 2]); // pass text file to each ATM
+		if (pthread_create(&ATMs_th[i], NULL, ATM::ExeCmd, (void*)ourBank.ATMs[i])) // create threads- need add parsing and exe methods
 		{
 			cerr << "Error creating thread" << endl;
 			exit(1);
@@ -40,13 +40,13 @@ int main(int argc, char* argv[])
 	}
 	pthread_t Commission_th, PrintAccounts_th;
 	// Commission collection thread
-	if (pthread_create(&Commission_th, NULL, Bank::Commission, (void*)&HeziBank))
+	if (pthread_create(&Commission_th, NULL, Bank, (void*)p_bank))// nedd to change and add the commosion method
 	{
 		cerr << "Error creating thread" << endl;
 		exit(1);
 	}
 	// Print Accounts thread
-	if (pthread_create(&PrintAccounts_th, NULL, Bank::PrintAccounts, (void*)&HeziBank))
+	if (pthread_create(&PrintAccounts_th, NULL, Bank::PrintAccounts, (void*)p_bank))//nedd to change and add the print method
 	{
 		cerr << "Error creating thread" << endl;
 		exit(1);
@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 	}
 	// free dynamically allocated memory
 	delete[] ATMs_th;
-	delete[] ATM_arr;
+	//delete[] ATM_arr;
 
 	return 0;
 }
