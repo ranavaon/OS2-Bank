@@ -31,8 +31,8 @@ int main(int argc, char* argv[])
 	pthread_t *ATMs_th = new pthread_t[N]; // array of N threads for the ATMs
 	for (int i = 0; i < N; i++)
 	{
-		ourBank.ATMs[i].setCmds(argv[i + 2]); // pass text file to each ATM
-		if (pthread_create(&ATMs_th[i], NULL, ATM::ExeCmd, (void*)ourBank.ATMs[i])) // create threads- need add parsing and exe methods
+		ourBank.ATMs[i].set_input_file(argv[i + 2]); // pass text file to each ATM
+		if (pthread_create(&ATMs_th[i], NULL, ATM::parse_input, (void*)ourBank.ATMs[i])) // create threads- need add parsing and exe methods
 		{
 			cerr << "Error creating thread" << endl;
 			exit(1);
@@ -40,13 +40,13 @@ int main(int argc, char* argv[])
 	}
 	pthread_t Commission_th, PrintAccounts_th;
 	// Commission collection thread
-	if (pthread_create(&Commission_th, NULL, Bank, (void*)p_bank))// nedd to change and add the commosion method
+	if (pthread_create(&Commission_th, NULL, Bank::comission, (void*)p_bank))// nedd to change and add the commosion method
 	{
 		cerr << "Error creating thread" << endl;
 		exit(1);
 	}
 	// Print Accounts thread
-	if (pthread_create(&PrintAccounts_th, NULL, Bank::PrintAccounts, (void*)p_bank))//nedd to change and add the print method
+	if (pthread_create(&PrintAccounts_th, NULL, Bank::printAllAcounts, (void*)p_bank))//nedd to change and add the print method
 	{
 		cerr << "Error creating thread" << endl;
 		exit(1);

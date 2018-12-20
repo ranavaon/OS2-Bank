@@ -7,16 +7,18 @@
 
 class ATM {
 public:
-	ATM(string num, Bank* p_bank):num(num),p_bank(p_bank){};
-	void openAccount(string accNum,string pass,int initMoney);
+	ATM(string num, Bank* p_bank){}//need to finish
+	void set_input_file(const char* input);//RAN NAVON- open the file to each ATM
+	static void* parse_input(void* ATM);//RAN NAVON-added parsing method
 	void withdraw(string accNum,string pass,int moneyOut);
 	void deposit(string accNum,string pass,int moneyIn);
-	void balanc(string accNum,string pass);
+	void balance(string accNum,string pass);
 	void makeVip(string accNum,string pass);
-	void transfer(string accFromNum,string pass,string accToNum,int money);
+	void transfer(string accFromNum,string pass,string accToNum,int amount);
 private:
-	string num;
+	string num; //RAN NAVON- changed it to int?- the string makes problems with the initilize
 	Bank* p_bank;
+	ifstream input_file;//RAN NAVON- changed beacause we needed open file
 	
 
 
