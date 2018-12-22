@@ -1,6 +1,12 @@
 #ifndef _ACCOUNT_H
 #define _ACCOUNT_H
+
 #define SLEEP_TIME 1
+#define PRINT_ACCOUNTS_PERIOD 500000
+#define COMMISSION_PERIOD 3
+#define MAX_PERCENTAGE 4
+#define MIN_PERCENTAGE 2
+#define ATM_SLEEP_TIME 100000
 
 #include <string.h>
 #include <iostream>
@@ -26,6 +32,8 @@ public:
 	string deposit(int amount, string password, string atm_id);// lock and unlock should be used in ATM method! or if not possible, make a wraper method for this one, to encapsulate it between lock and unlock
 	string convert_to_vip(string password,string atm_id);// lock and unlock should be used in ATM method! or if not possible, make a wraper method for this one, to encapsulate it between lock and unlock
 	string getBalance(string password,string atm_id);// lock and unlock should be used in ATM method! or if not possible, make a wraper method for this one, to encapsulate it between lock and unlock
+	string getCurrBalance();
+	string getPassword();
 	bool is_vip(){return VIP;}// lock and unlock should be used in ATM method! or if not possible, make a wraper method for this one, to encapsulate it between lock and unlock
 	bool PasswordCheck(string pass){return !(pass.compare(Password));}
 	void lock(SpecificLock L, ReadWrite readWrite); // should be used in ATM methods!

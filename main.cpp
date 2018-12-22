@@ -1,4 +1,4 @@
-#include "Bank.h"
+#include "bank.h"
 
 int main(int argc, char* argv[])
 {
@@ -16,9 +16,9 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 	// seed the rand function
-	srand(time(NULL));//????
-	Bank ourBank; // this is the main bank object
-	Bank* p_bank=&ourBank;
+	srand(time(NULL));
+	bank ourBank; // this is the main bank object
+	bank* p_bank=&ourBank;
 	//ATM* ATM_arr = new ATM[N]; // allocate array of N ATMs
 
 
@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 	pthread_t *ATMs_th = new pthread_t[N]; // array of N threads for the ATMs
 	for (int i = 0; i < N; i++)
 	{
-		ourBank.ATMs[i].set_input_file(argv[i + 2]); // pass text file to each ATM
+		ourBank.ATMs[i].parse_input(argv[i + 2]); // pass text file to each ATM
 		if (pthread_create(&ATMs_th[i], NULL, ATM::parse_input, (void*)ourBank.ATMs[i])) // create threads- need add parsing and exe methods
 		{
 			cerr << "Error creating thread" << endl;
@@ -40,13 +40,13 @@ int main(int argc, char* argv[])
 	}
 	pthread_t Commission_th, PrintAccounts_th;
 	// Commission collection thread
-	if (pthread_create(&Commission_th, NULL, Bank::comission, (void*)p_bank))// nedd to change and add the commosion method
+	if (pthread_create(&Commission_th, NULL, bank::comission, (void*)p_bank))// nedd to change and add the commosion method
 	{
 		cerr << "Error creating thread" << endl;
 		exit(1);
 	}
 	// Print Accounts thread
-	if (pthread_create(&PrintAccounts_th, NULL, Bank::printAllAcounts, (void*)p_bank))//nedd to change and add the print method
+	if (pthread_create(&PrintAccounts_th, NULL, bank::printAccounts, (void*)p_bank))//nedd to change and add the print method
 	{
 		cerr << "Error creating thread" << endl;
 		exit(1);

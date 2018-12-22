@@ -1,25 +1,24 @@
-#ifndef _ATM_H
+
+ #ifndef _ATM_H
 #define _ATM_H
 
-#include "Accounts.h"
-#include "Bank.h"
+#include "Account.h"
+#include "bank.h"
 
 
 class ATM {
 public:
-	ATM(string num, Bank* p_bank){}//need to finish
-	void set_input_file(const char* input);//RAN NAVON- open the file to each ATM
-	static void* parse_input(void* ATM);//RAN NAVON-added parsing method
+	ATM(string num, bank* p_bank, string input_path):num(num),p_bank(p_bank){parse_input(input_path);}
+	void* parse_input(void* input_path);//changed it for the p_thread creat
 	void withdraw(string accNum,string pass,int moneyOut);
 	void deposit(string accNum,string pass,int moneyIn);
 	void balance(string accNum,string pass);
 	void makeVip(string accNum,string pass);
 	void transfer(string accFromNum,string pass,string accToNum,int amount);
 private:
-	string num; //RAN NAVON- changed it to int?- the string makes problems with the initilize
-	Bank* p_bank;
-	ifstream input_file;//RAN NAVON- changed beacause we needed open file
-	
+	string num;
+	bank* p_bank;
+
 
 
 };
