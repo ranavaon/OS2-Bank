@@ -1,113 +1,153 @@
 #include "ATM.h"
-ATM::ATM(string num, Bank* p_bank){
-	this->num=num;
-	this->p_bank=p_bank;
-}
-void ATM::set_input_file(const char* input){
-	this->input_file.open(input);
-}
+
 
 void* ATM :: parse_input(void* atm){
-	// RAN NAVON- still need to handel mutexs if needed
-	ATM* to_handel_ATM = (ATM*)atm;
-	string cmd;
+	ATM* p_atm = (ATM*)atm;
+
+	ifstream cmds;
+	cmds.open(p_atm->input_path);
+	string crnt_cmd;
 	vector<string> tokens;
-	string buf;
-	stringstream ss(cmd);
-
-
-	while (getline(to_handel_ATM->input_file, cmd)) // read a line from text file
-	{
-		tokens.clear();
-		while (ss >> buf) // this tokens by spaces
-			tokens.push_back(buf); // tokenize command
-		if (!tokens.size())
+	while(getline(cmds, crnt_cmd)){
+		p_atm->split(crnt_cmd, &tokens);
+		if (!tokens.size()){
 			continue;
-		if (tokens[0].compare("O") == 0) // Open command
-			to_handel_ATM->p_bank->open_Account(tokens[1],tokens[2],atoi(tokens[3].c_str()));
-		else if (tokens[0].compare("D") == 0) // Deposit command
-			to_handel_ATM-deposit(tokens[1],tokens[2],atoi(tokens[3].c_str()));
-		else if (tokens[0].compare("W") == 0) // Withdraw command
-			to_handel_ATM->withdraw(tokens[1],tokens[2],atoi(tokens[3].c_str()));
-		else if (tokens[0].compare("B") == 0) // Balance command
-			to_handel_ATM->balance(tokens[1],tokens[2]);
-		else if (tokens[0].compare("T") == 0) // Transfer command
-			to_handel_ATM->transfer(tokens[1],tokens[2],tokens[3],atoi(tokens[4].c_str()));
-		else if (tokens[0].compare("L") == 0) // Transfer command
-			to_handel_ATM->makeVip(tokens[1],tokens[2]);
+		}// handle here all commands execution!
+		if(!tokens[0].compare("O")){ // open account
+			if(tokens.size() != 4){
+				cerr << "Not enough arguments provided for oppening an account" << endl;
+				exit(1);
+			}
+			if(p_atm->p_bank->get_account(atoi(tokens[1].c_str())) != NULL){
+				p_atm->p_bank->print_to_log("Error " + p_atm->num+ ": Your transaction failed – account with the same id exists");
+				continue;
+			}
+			string did_open=p_atm->p_bank->openAcc(atoi(tokens[1].c_str()), tokens[2],p_atm->num, atoi(tokens[3].c_str()));
+			p_atm->p_bank->print_to_log(did_open);
+			//cout << p_atm->num << ": New account id is " << tokens[1] <<" with password " << tokens[2] << " and initial balance " << tokens[3] << endl;
+		}
+		else if (!tokens[0].compare("L")){ // make VIP
+			if(tokens.size() != 3){
+				cerr << "Not enough arguments provided for making an account vip" << endl;
+				exit(1);
+			}
+			p_atm->makeVip(atoi(tokens[1].c_str()), tokens[2]);
+		}
+		else if(!tokens[0].compare("D")){ // deposit
+			if(tokens.size() != 4){
+				cerr << "Not enough arguments provided for deposit" << endl;
+				exit(1);
+			}
+			p_atm->deposit(atoi(tokens[1].c_str()), tokens[2], atoi(tokens[3].c_str()));
+		}
+		else if(!tokens[0].compare("W")){ //withdraw
+			if(tokens.size() != 4){
+				cerr << "Not enough arguments provided for withdraw" << endl;
+				exit(1);
+			}
+			p_atm->withdraw(atoi(tokens[1].c_str()), tokens[2], atoi(tokens[3].c_str()));
+		}
+		else if(!tokens[0].compare("B")){ //balance
+			if(tokens.size() != 3){
+				cerr << "Not enough arguments provided for balance" << endl;
+				exit(1);
+			}
+			p_atm->balance(atoi(tokens[1].c_str()), tokens[2]);
+		}
+		else if(!tokens[0].compare("T")){ // transfer
+			if(tokens.size() != 5){
+				cerr << "Not enough arguments provided for transfer" << endl;
+				exit(1);
+			}
+			p_atm->transfer(atoi(tokens[1].c_str()), tokens[2], atoi(tokens[3].c_str()), atoi(tokens[4].c_str()));
+		}
 		else
-			cerr << "Unknown command" << endl;
-		usleep(ATM_SLEEP_TIME);
+			cerr << "not a legal command!" << endl;
 	}
-
-	/*
-		ATM operations have ended
-	*/
-	//pthread_mutex_lock(&to_handel_ATM->_bank->getATMsCntLock()); // lock active atms counter
-	//Bank::ActiveATMs--;
-	//pthread_mutex_unlock(&to_handel_ATM->_bank->getATMsCntLock()); // unlock
-
-	//pthread_exit(NULL);
-
+	p_atm->p_bank->decrease_atm_num();
+	pthread_exit(NULL);
 }
 
 
-void ATM :: withdraw(string accNum,string pass,int moneyOut){
-	Account* pAcc = p_bank->get_account(accNum);
+
+void ATM :: withdraw(int accNum,string pass,int moneyOut){
+	Account* pAcc = p_bank->get_account(accNum); // in
+	if(pAcc == NULL){
+		this->p_bank->print_to_log ("Error " + this->num + ": Your transaction failed – account id " + to_string(accNum) + " does not exist");
+		return;
+	}
 	pAcc->lock(balance_,write_);
 	string result = pAcc->withdraw(moneyOut, pass, this->num, not_transfer);
-	cout << result << endl;
+	this->p_bank->print_to_log(result);
+	sleep(ATM_SLEEP_TIME);
 	pAcc->unlock(balance_,write_);
 }
 
 
-void ATM :: deposit(string accNum,string pass,int moneyIn){
+void ATM :: deposit(int accNum,string pass,int moneyIn){
 	Account* pAcc = p_bank->get_account(accNum);
+	if(pAcc == NULL){
+		this->p_bank->print_to_log ("Error " + this->num + ": Your transaction failed – account id " + to_string(accNum) + " does not exist");
+		return;
+	}
 	pAcc->lock(balance_,write_);
-	string result = pAcc->deposit(moneyOut, pass, this->num);
-	cout << result << endl;
+	string result = pAcc->deposit(moneyIn, pass, this->num);
+	this->p_bank->print_to_log(result);
+	sleep(ATM_SLEEP_TIME);
 	pAcc->unlock(balance_,write_);
 }
 
 
-void ATM :: balance(string accNum,string pass){
+void ATM :: balance(int accNum,string pass){
 	Account* pAcc = p_bank->get_account(accNum);
+	if(pAcc == NULL){
+		this->p_bank->print_to_log ("Error " + this->num + ": Your transaction failed – account id " + to_string(accNum) + " does not exist");
+		return;
+	}
 	pAcc->lock(balance_,read_);
 	string result = pAcc->getBalance(pass, this->num);
-	cout << result << endl;
+	this->p_bank->print_to_log(result);
+	sleep(ATM_SLEEP_TIME);
 	pAcc->unlock(balance_,read_);
 }
 
 
-void ATM :: makeVip(string accNum,string pass){
+void ATM :: makeVip(int accNum,string pass){
 	Account* pAcc = p_bank->get_account(accNum);
+	if(pAcc == NULL){
+		this->p_bank->print_to_log ("Error " + this->num + ": Your transaction failed – account id " + to_string(accNum) + " does not exist");
+		return;
+	}
 	pAcc->lock(vip_,write_);
 	try{
-		string result = pAcc->getBalance(pass, this->num);
+		pAcc->convert_to_vip(pass, this->num);
 	}
-	catch(string e){
-		cout << e << endl;
+	catch(string &e){
+		this->p_bank->print_to_log(e);
 	}
+	sleep(ATM_SLEEP_TIME);
 	pAcc->unlock(vip_,write_);
 }
 
 
-void ATM :: transfer(string accFromNum,string pass,string accToNum,int amount){
+void ATM :: transfer(int accFromNum,string pass,int accToNum,int amount){
 	Account* pAcc_from = p_bank->get_account(accFromNum);
 	Account* pAcc_to = p_bank->get_account(accToNum);
 	string result_from;
 	string result_to;
 	if(pAcc_from == NULL){
-		cout << "Error "+num+": Your transaction failed – account id "+accFromNum+" does not exist" <<endl; 
+		this->p_bank->print_to_log ("Error " + this->num + ": Your transaction failed – account id " + to_string(accFromNum) + " does not exist");
+		sleep(ATM_SLEEP_TIME);
 		return;
 	}
 	if(pAcc_to == NULL){
-		cout << "Error "+num+": Your transaction failed – account id "+accToNum+" does not exist" <<endl;
+		this->p_bank->print_to_log ("Error " + this->num + ": Your transaction failed – account id " + to_string(accToNum) + " does not exist");
+		sleep(ATM_SLEEP_TIME);
 		return;
 	}
 	Account* lock_first;
 	Account* lock_second;
-	if(accFromNum.compare(accToNum)>0){
+	if(accFromNum>accToNum){
 		lock_first = pAcc_from;
 		lock_second = pAcc_to;
 	}
@@ -117,21 +157,40 @@ void ATM :: transfer(string accFromNum,string pass,string accToNum,int amount){
 	}
 	lock_first->lock(balance_,write_);
 	lock_second->lock(balance_,write_);
-	result_from = pAcc_from->withdraw(amount, pass, this->num, transfer);
+	result_from = pAcc_from->withdraw(amount, pass, this->num, transfer_);
 	if(result_from.compare("transfer_withdraw_success")){
-		cout << result_from << endl;
-		lock_first->unlock(balance_,write_);
+		this->p_bank->print_to_log(result_from);
 		lock_second->unlock(balance_,write_);
+		lock_first->unlock(balance_,write_);
 		return;
 	}
 	result_to = pAcc_to->deposit(amount, "transfer", this->num);
 	if(result_to.compare("transfer_deposit_success")){
-		cout << result_to << endl;
-		lock_first->unlock(balance_,write_);
+		this->p_bank->print_to_log(result_to);
 		lock_second->unlock(balance_,write_);
+		lock_first->unlock(balance_,write_);
 		return;
 	}
-	cout << num+": Transfer "+amount+" from account "+accFromNum+" to account "+accToNum+" new account balance is "+pAcc_from->get_balance("transfer", num)+" new target account balance is "+pAcc_to->get_balance("transfer", num) << endl;
-	lock_first->unlock(balance_,write_);
+	this->p_bank->print_to_log( this->num + ": Transfer " +to_string(amount) + " from account " + to_string(accFromNum) +" to account " + to_string(accToNum) + " new account balance is " + pAcc_from->getBalance("transfer", num) + " new target account balance is " + (pAcc_to->getBalance("transfer", num)));
+	sleep(ATM_SLEEP_TIME);
 	lock_second->unlock(balance_,write_);
+	lock_first->unlock(balance_,write_);
 }
+
+void ATM :: split(string toSplit,  vector<string>* dest){
+	string temp;
+	stringstream strStrm(toSplit);
+	dest->clear();
+	while(strStrm >> temp){
+		dest->push_back(temp);
+	}
+}
+
+
+
+
+
+
+
+
+
