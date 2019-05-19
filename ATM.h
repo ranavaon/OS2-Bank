@@ -14,7 +14,7 @@
 
 class ATM {
 public:
-	ATM(string num_, bank* p_bank_, string input_path_):num(num_),p_bank(p_bank_),input_path(input_path_){/*parse_input(this);*/}
+	ATM(string num_, Bank* p_Bank_, string input_path_):num(num_),p_Bank(p_Bank_),input_path(input_path_){/*parse_input(this);*/}
 	static void* parse_input(void*);//);
 	void withdraw(int accNum,string pass,int moneyOut);
 	void deposit(int accNum,string pass,int moneyIn);
@@ -25,6 +25,6 @@ public:
 private:
 	string input_path;
 	string num;
-	bank* p_bank;
+	Bank* p_Bank;
 };
 #endif

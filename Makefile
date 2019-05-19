@@ -3,7 +3,7 @@ CCC = g++
 CXXFLAGS = -g -Wall -std=c++11
 CXXLINK = $(CCC)
 OBJS = main.o bank.o Account.o ATM.o
-TARGET = bank
+TARGET = Bank
 RM = rm -f
 # Creating the  executable
 $(TARGET): $(OBJS)

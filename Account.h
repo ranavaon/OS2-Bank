@@ -26,11 +26,11 @@ class Account{
 public:
 Account(int accNum,string pass,int initMoney,bool VIP_);
 	int get_AccountNum(){return AccountNum;}
-	string withdraw(int amount, string password, string atm_id, is_transfer is_transfer_);// lock and unlock should be used in ATM method! or if not possible, make a wraper method for this one, to encapsulate it between lock and unlock (already inside the new tread made for the ATM)
-	string deposit(int amount, string password, string atm_id);// lock and unlock should be used in ATM method! or if not possible, make a wraper method for this one, to encapsulate it between lock and unlock
-	void convert_to_vip(string password,string atm_id);// lock and unlock should be used in ATM method! or if not possible, make a wraper method for this one, to encapsulate it between lock and unlock
-	string getBalance(string password,string atm_id);// lock and unlock should be used in ATM method! or if not possible, make a wraper method for this one, to encapsulate it between lock and unlock
-	bool is_vip(){return VIP;}// lock and unlock should be used in ATM method! or if not possible, make a wraper method for this one, to encapsulate it between lock and unlock
+	string withdraw(int amount, string password, string atm_id, is_transfer is_transfer_);
+	string deposit(int amount, string password, string atm_id);
+	void convert_to_vip(string password,string atm_id);
+	string getBalance(string password,string atm_id);
+	bool is_vip(){return VIP;}
 	bool PasswordCheck(string pass){return !(pass.compare(Password));}
 	void print_status();
 	void lock(SpecificLock L, ReadWrite readWrite); // should be used in ATM methods!
